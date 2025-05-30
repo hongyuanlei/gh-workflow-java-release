@@ -8,9 +8,8 @@ on:
         type: string
         default: ${{ github.event.repository.name }}
       dockerhub-repo:
-        required: false
+        required: true
         type: string
-        default: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}
       java-version:
         required: false
         type: string
