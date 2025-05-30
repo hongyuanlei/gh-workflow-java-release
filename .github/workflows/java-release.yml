@@ -64,6 +64,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.dockerhub-repo }}:latest
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.dockerhub-repo }}:${{ github.sha }}
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.dockerhub-repo }}:${{ github.run_number }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.app-name }}:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.app-name }}:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.app-name }}:${{ github.run_number }}
