@@ -7,6 +7,14 @@ on:
         required: false
         type: string
         default: ${{ github.event.repository.name }}
+      dockerhub-repo:
+        required: false
+        type: string
+        default: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ github.event.repository.name }}
+      java-version:
+        required: false
+        type: string
+        default: '17'
       otel-version:
         required: false
         type: string
@@ -22,21 +30,44 @@ jobs:
           name: build-artifact-${{ inputs.app-name }}-java
           path: artifacts
 
-      - name: List target directory contents
-        run: |
-          echo "Working directory: $(pwd)"
-          ls -la artifacts/
-          ls -la artifacts/*.jar || echo "No JAR files found"
-
       - name: Download OpenTelemetry Agent
         run: |
             mkdir -p opentelemetry
             wget -O opentelemetry/opentelemetry-javaagent.jar \
               https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${{ inputs.otel-version }}/opentelemetry-javaagent.jar
+
+      - name: Create dockerfile
+        run: |
+          cat <<EOF > Dockerfile
+          FROM openjdk:${{ inputs.java-version }}-slim
           
+          WORKDIR /app
+
+          COPY opentelemetry/opentelemetry-javaagent.jar opentelemetry-javaagent.jar
+          COPY artifacts/*.jar app.jar
+
+          EXPOSE 8080
+
+          ENTRYPOINT ["java", \
+              "-javaagent:opentelemetry-javaagent.jar", \
+              "-Dotel.service.name=${{ inputs.app-name }}", \
+              "-jar", \
+              "app.jar"]
+          EOF
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ inputs.dockerhub-repo }}:latest
+            ${{ inputs.dockerhub-repo }}:${{ github.sha }}
+            ${{ inputs.dockerhub-repo }}:${{ github.run_number }}
