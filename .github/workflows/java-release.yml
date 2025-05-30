@@ -7,10 +7,6 @@ on:
         required: false
         type: string
         default: ${{ github.event.repository.name }}
-      dockerhub-repo:
-        required: false
-        type: string
-        default: ${{ github.event.repository.name }}
       java-version:
         required: false
         type: string
@@ -68,6 +64,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ inputs.dockerhub-repo }}:latest
-            ${{ inputs.dockerhub-repo }}:${{ github.sha }}
-            ${{ inputs.dockerhub-repo }}:${{ github.run_number }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.dockerhub-repo }}:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.dockerhub-repo }}:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ inputs.dockerhub-repo }}:${{ github.run_number }}
